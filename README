@@ -1,3 +1,8 @@
 Environment variables
 
-NODE_NAME - Hostname to report to elasticsearch
+NODE_NAME          - Hostname to report to elasticsearch (Default: localhost)
+ES_HOST_LIST       - List of Elasticsearch targets (Default: http://elasticsearch.jamiehouse:9200)
+ES_MAX_CONNECTIONS - Max Elasticsearch connections (Default: 25)
+ES_INDEX           - Elasticsearch index to write to (Default: 'nvidia-metrics-YYYY.MM.DD'
+SLEEP_TIME         - Reporting interval (Default: 10)
+

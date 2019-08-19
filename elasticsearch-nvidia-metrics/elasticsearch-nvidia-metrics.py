@@ -24,8 +24,10 @@ es = Elasticsearch(os.getenv('ES_HOST_LIST', 'http://elasticsearch.jamiehouse:92
 #>>> retval
 #'0, GPU-9c9290a3-b54e-adb6-02ff-9cf106b50ca3, 44, 65, 3403\n1, GPU-adf23210-605a-ade1-549d-9fc5996f1f9c, 43, 64, 3403\n2, GPU-72ddad7f-26cb-9d2b-8a74-781877b7d575, 47, 68, 3403\n3, GPU-cd6b309d-8885-e7d2-6aae-834381efa24a, 44, 65, 3403\n4, GPU-29b23a6a-d622-9f37-4e18-9ed0cfde2daa, 47, 68, 3403\n5, GPU-ef77ef4a-2670-76ea-4be0-92c90c173a41, 48, 69, 3403\n'
 def get_nvidia_metrics():
-#  metrics_str = subprocess.check_output(["nvidia-smi", "--query-gpu=index,gpu_uuid,fan.speed,temperature.gpu,memory.used", "--format=csv,noheader,nounits"])
-  metrics_str = '0, GPU-9c9290a3-b54e-adb6-02ff-9cf106b50ca3, 44, 65, 3403\n1, GPU-adf23210-605a-ade1-549d-9fc5996f1f9c, 43, 64, 3403\n2, GPU-72ddad7f-26cb-9d2b-8a74-781877b7d575, 47, 68, 3403\n3, GPU-cd6b309d-8885-e7d2-6aae-834381efa24a, 44, 65, 3403\n4, GPU-29b23a6a-d622-9f37-4e18-9ed0cfde2daa, 47, 68, 3403\n5, GPU-ef77ef4a-2670-76ea-4be0-92c90c173a41, 48, 69, 3403\n'
+  if os.getenv('MOCK', False):
+    metrics_str = '0, GPU-9c9290a3-b54e-adb6-02ff-9cf106b50ca3, 44, 65, 3403\n1, GPU-adf23210-605a-ade1-549d-9fc5996f1f9c, 43, 64, 3403\n2, GPU-72ddad7f-26cb-9d2b-8a74-781877b7d575, 47, 68, 3403\n3, GPU-cd6b309d-8885-e7d2-6aae-834381efa24a, 44, 65, 3403\n4, GPU-29b23a6a-d622-9f37-4e18-9ed0cfde2daa, 47, 68, 3403\n5, GPU-ef77ef4a-2670-76ea-4be0-92c90c173a41, 48, 69, 3403\n'
+  else:
+    metrics_str = subprocess.check_output(["nvidia-smi", "--query-gpu=index,gpu_uuid,fan.speed,temperature.gpu,memory.used", "--format=csv,noheader,nounits"])
   return metrics_str
 
 def send_to_elasticsearch(metrics_str):
@@ -33,6 +35,11 @@ def send_to_elasticsearch(metrics_str):
   reader = csv.DictReader(f, delimiter=',', fieldnames=['index', 'gpu_uuid', 'fanspeed', 'temperaturegpu', 'memoryused'], skipinitialspace=True)
   for row in reader:
     json_output = json.dumps(row)
+    # Add additional data to json
+    json_data = json.loads(json_output)
+    json_data['node_name'] = os.getenv('NODE_NAME', os.getenv('HOSTNAME', 'localhost'))
+    json_output = json.dumps(json_data)
+
     print("json: %s" % json_output)
     retval = es.index(index=os.getenv('ES_INDEX', 'nvidia-metrics') + '-' + datetime.datetime.now().strftime('%Y.%m.%d'),
                       doc_type='nvidia-metrics',
