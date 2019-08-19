@@ -1,0 +1,3 @@
+Environment variables
+
+NODE_NAME - Hostname to report to elasticsearch
