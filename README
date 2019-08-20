@@ -6,3 +6,4 @@ ES_MAX_CONNECTIONS - Max Elasticsearch connections (Default: 25)
 ES_INDEX           - Elasticsearch index to write to (Default: 'nvidia-metrics-YYYY.MM.DD'
 SLEEP_TIME         - Reporting interval (Default: 10)
 
+Publish new version: make clean build publishcontainer upload
